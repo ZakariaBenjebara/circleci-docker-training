@@ -56,23 +56,8 @@ jobs:
           - maven-dependencies-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - maven-dependencies-
-      - run: ./mvnw --no-daemon downloadDependencies --stacktrace
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: maven-dependencies-{{ checksum "pom.xml" }}
-      - attach_workspace:
-          at: ~/zgeeks/circleci-training
       - run: mvn test
-      - store_test_results:
-          path: target/test-results
-      - store_artifacts:
-          path: target/test-results
-      - persist_to_workspace:
-          root: ~/zgeeks/circleci-training
-          paths:
-            - target/test-results
-
+      
 workflows:
   version: 2
   build_and_test:
