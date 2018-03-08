@@ -1,0 +1,82 @@
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+
+version: 2
+
+defaults: &defaults
+  working_directory: ~/zgeeks/circleci-training
+  docker:
+    - image: circleci/openjdk:8-jdk
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+  environment:
+    JVM_OPTS: -Xmx3200m
+    TERM: dumb
+
+version: 2
+jobs:
+  assemble:
+    <<: *defaults
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - maven-dependencies-{{ checksum "mvnw" }}
+          # fallback to using the latest cache if no exact match is found
+          - maven-dependencies-
+      - run: ./mvnw --no-daemon downloadDependencies --stacktrace
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: mvn-dependencies-{{ checksum "mvnw" }}
+      - run: ./mvnw --no-daemon assemble compileTestJava
+      - store_artifacts:
+          path: target
+      - persist_to_workspace:
+          root: ~/zgeeks/circleci-training
+          paths:
+            - target/classes
+            - target/test-classes
+            - target/resources/main
+            - target/resources/test
+
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - maven-dependencies-{{ checksum "mvnw" }}
+          # fallback to using the latest cache if no exact match is found
+          - maven-dependencies-
+      - run: ./mvnw --no-daemon downloadDependencies --stacktrace
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: maven-dependencies-{{ checksum "mvnw" }}
+      - attach_workspace:
+          at: ~/zgeeks/circleci-training
+      - run: mvn test
+      - store_test_results:
+          path: target/test-results
+      - store_artifacts:
+          path: target/test-results
+      - persist_to_workspace:
+          root: ~/zgeeks/circleci-training
+          paths:
+            - target/test-results
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - assemble
+      - test:
+          requires:
+            - assemble
