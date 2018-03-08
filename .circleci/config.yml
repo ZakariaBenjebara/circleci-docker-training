@@ -16,6 +16,7 @@ defaults: &defaults
 
   environment:
     JVM_OPTS: -Xmx3200m
+    MAVEN_OPTS: -Xmx3200m
     TERM: dumb
 
 version: 2
@@ -27,15 +28,15 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - maven-dependencies-{{ checksum "mvnw" }}
+          - maven-dependencies-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - maven-dependencies-
-      - run: ./mvnw --no-daemon downloadDependencies --stacktrace
+      - run: mvn dependency:go-offline 
       - save_cache:
           paths:
             - ~/.m2
-          key: mvn-dependencies-{{ checksum "mvnw" }}
-      - run: ./mvnw --no-daemon assemble compileTestJava
+          key: maven-dependencies-{{ checksum "pom.xml" }}
+      - run: mvn install 
       - store_artifacts:
           path: target
       - persist_to_workspace:
@@ -52,14 +53,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - maven-dependencies-{{ checksum "mvnw" }}
+          - maven-dependencies-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - maven-dependencies-
       - run: ./mvnw --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.m2
-          key: maven-dependencies-{{ checksum "mvnw" }}
+          key: maven-dependencies-{{ checksum "pom.xml" }}
       - attach_workspace:
           at: ~/zgeeks/circleci-training
       - run: mvn test
