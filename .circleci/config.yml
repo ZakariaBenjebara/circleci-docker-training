@@ -21,7 +21,7 @@ defaults: &defaults
 
 version: 2
 jobs:
-  assemble:
+  prepare:
     <<: *defaults
 
     steps:
@@ -36,16 +36,6 @@ jobs:
           paths:
             - ~/.m2
           key: maven-dependencies-{{ checksum "pom.xml" }}
-      - run: mvn install 
-      - store_artifacts:
-          path: target
-      - persist_to_workspace:
-          root: ~/zgeeks/circleci-training
-          paths:
-            - target/classes
-            - target/test-classes
-            - target/resources/main
-            - target/resources/test
 
   test:
     <<: *defaults
@@ -57,12 +47,30 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - maven-dependencies-
       - run: mvn test
-      
+      - store_test_results:
+        path: target/surefire-reports
+  
+  package:
+    <<: *defaults
+    steps:
+     - checkout
+     - restore_cache:
+          keys:
+          - maven-dependencies-{{ checksum "pom.xml" }}
+          # fallback to using the latest cache if no exact match is found
+          - maven-dependencies-
+     - run: mvn package -DskipTests
+     - store_artifacts:
+          path: target/zgeeks-circleci-training-0.0.1-SNAPSHOT.jar
+  
 workflows:
   version: 2
-  build_and_test:
+  prepare_test_package:
     jobs:
-      - assemble
+      - prepare
       - test:
           requires:
-            - assemble
+            - prepare
+      - package:
+          requires:
+            - test
