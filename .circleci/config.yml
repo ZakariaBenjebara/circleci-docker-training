@@ -62,6 +62,18 @@ jobs:
      - run: mvn package -DskipTests
      - store_artifacts:
           path: target/zgeeks-circleci-training-0.0.1-SNAPSHOT.jar
+
+  deploy:
+    <<: *defaults
+    steps:
+     - checkout
+     # build and push Docker image
+     - run: |
+          TAG=0.1.$CIRCLE_BUILD_NUM
+          docker build -t zbenjeb23/zgeeks-circle-ci:$TAG .      # (4)
+          docker login -u $DOCKER_USER -p $DOCKER_PASS         # (5)
+          docker push zbenjeb23/zgeeks-circle-ci:$TAG
+    
   
 workflows:
   version: 2
@@ -74,3 +86,6 @@ workflows:
       - package:
           requires:
             - test
+      - deploy:
+          requires:
+            - package
