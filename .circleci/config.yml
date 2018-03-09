@@ -93,13 +93,7 @@ workflows:
   version: 2
   prepare_test_package:
     jobs:
-      - prepare
-      - test:
-          requires:
-            - prepare
-      - package:
-          requires:
-            - test
+      - package
       - deploy:
           requires:
             - package
