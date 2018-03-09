@@ -2,7 +2,7 @@ FROM java
 
 VOLUME /tmp
 
-ADD zgeeks-circleci-training-*.jar zgeeks-circleci-training.jar
+ADD target/zgeeks-circleci-training-0.0.1-SNAPSHOT.jar zgeeks-circleci-training.jar
 
 RUN bash -c 'touch /zgeeks-circleci-training.jar'
 
