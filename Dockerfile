@@ -1,4 +1,4 @@
-FROM java
+FROM anapsix/alpine-java
 
 VOLUME /tmp
 
