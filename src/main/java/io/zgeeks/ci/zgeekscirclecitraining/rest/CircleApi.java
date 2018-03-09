@@ -12,6 +12,6 @@ public class CircleApi {
     @Path("/hello")
     @GET
     public String helloCircleCi() {
-        return "hello circle ci";
+        return "hello circle ci docker";
     }
 }
